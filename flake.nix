@@ -97,15 +97,33 @@
           };
         };
 
-        packages.default = pkgs.writeShellApplication {
-          name = "text-generation-inference";
-          runtimeInputs = [
-            server
-            router
-          ];
-          text = ''
-            ${launcher}/bin/text-generation-launcher "$@"
-          '';
+        packages = rec {
+          default = pkgs.writeShellApplication {
+            name = "text-generation-inference";
+            runtimeInputs = [
+              server
+              router
+            ];
+            text = ''
+              ${launcher}/bin/text-generation-launcher "$@"
+            '';
+          };
+
+          dockerImage = pkgs.dockerTools.buildLayeredImage {
+            name = "tgi-docker";
+            tag = "latest";
+            config = {
+              EntryPoint = [ "${default}/bin/text-generation-inference" ];
+              Env = [
+                "HF_HOME=/data"
+                # hf-transfer is still broken
+                "HF_HUB_ENABLE_HF_TRANSFER=0"
+                "PORT=80"
+              ];
+
+            };
+
+          };
         };
       }
     );
