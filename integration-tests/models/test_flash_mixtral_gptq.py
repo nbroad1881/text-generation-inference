@@ -2,20 +2,20 @@ import pytest
 
 
 @pytest.fixture(scope="module")
-def flash_mixtral_handle(launcher):
-    with launcher("mistralai/Mixtral-8x7B-v0.1", num_shard=8) as handle:
+def flash_mixtral_gptq_handle(launcher):
+    with launcher("TheBloke/Mixtral-8x7B-Instruct-v0.1-GPTQ", num_shard=2) as handle:
         yield handle
 
 
 @pytest.fixture(scope="module")
-async def flash_mixtral(flash_mixtral_handle):
-    await flash_mixtral_handle.health(300)
-    return flash_mixtral_handle.client
+async def flash_mixtral_gptq(flash_mixtral_gptq_handle):
+    await flash_mixtral_gptq_handle.health(300)
+    return flash_mixtral_gptq_handle.client
 
 
 @pytest.mark.asyncio
-async def test_flash_mixtral(flash_mixtral, response_snapshot):
-    response = await flash_mixtral.generate(
+async def test_flash_mixtral_gptq(flash_mixtral_gptq, response_snapshot):
+    response = await flash_mixtral_gptq.generate(
         "Test request", max_new_tokens=10, decoder_input_details=True
     )
 
@@ -23,8 +23,8 @@ async def test_flash_mixtral(flash_mixtral, response_snapshot):
 
 
 @pytest.mark.asyncio
-async def test_flash_mixtral_all_params(flash_mixtral, response_snapshot):
-    response = await flash_mixtral.generate(
+async def test_flash_mixtral_gptq_all_params(flash_mixtral_gptq, response_snapshot):
+    response = await flash_mixtral_gptq.generate(
         "Test request",
         max_new_tokens=10,
         repetition_penalty=1.2,
@@ -45,9 +45,11 @@ async def test_flash_mixtral_all_params(flash_mixtral, response_snapshot):
 
 
 @pytest.mark.asyncio
-async def test_flash_mixtral_load(flash_mixtral, generate_load, response_snapshot):
+async def test_flash_mixtral_gptq_load(
+    flash_mixtral_gptq, generate_load, response_snapshot
+):
     responses = await generate_load(
-        flash_mixtral, "Test request", max_new_tokens=10, n=4
+        flash_mixtral_gptq, "Test request", max_new_tokens=10, n=4
     )
 
     assert len(responses) == 4
