@@ -70,6 +70,8 @@ class GPTQMarlinSparseMoELayer(nn.Module):
             prefix=prefix, n_experts=n_experts, name=down_proj_name, weights=weights
         )
 
+        self.bits = weights.loader.bits
+
     def forward(self, x: torch.Tensor, *, gating_output: torch.Tensor) -> torch.Tensor:
         return fused_marlin_moe(
             x,
@@ -89,6 +91,7 @@ class GPTQMarlinSparseMoELayer(nn.Module):
             use_grouped_topk=self.n_expert_group is not None,
             num_expert_group=self.n_expert_group,
             topk_group=self.topk_group,
+            num_bits=self.bits,
         )
 
 
